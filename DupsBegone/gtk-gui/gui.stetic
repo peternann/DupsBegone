@@ -43,7 +43,8 @@
                   <widget class="Gtk.TextView" id="textviewFoldersToScan">
                     <property name="MemberName" />
                     <property name="CanFocus">True</property>
-                    <property name="Text">/NAS/OurPhotos_BACKUP/2007</property>
+                    <property name="Text">/NAS/OurPhotos_BACKUP
+/NAS/OurPhotos-OldAndMessy</property>
                   </widget>
                 </child>
               </widget>

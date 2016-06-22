@@ -19,10 +19,12 @@ namespace DupsBegone
 
 		ConcurrentQueue<FolderItem> foldersRecursed = new ConcurrentQueue<FolderItem>();
 
-		// A dictionary, hashed by Folder-File count strings like "4-23",
+		// A dictionary, hashed by Folder-File count strings like "4-23-AB89",
 		//  containing lists of folders with that same pattern;
 		Dictionary<string, List<FolderItem>> HashedFolderListByCounts = new Dictionary<string, List<FolderItem>>();
 
+		// An ordered queue of _potential_ duplicate folders, based on crude file/folder count data:
+		ConcurrentQueue<FolderItem> potentialDupFoldersByCounts = new ConcurrentQueue<FolderItem>();
 
 		public int PotentialMatchingFoldsToScanCount  = 0;
 		public int PotentialMatchingFoldsScannedCount = 0;
@@ -111,21 +113,27 @@ namespace DupsBegone
 		{
 			// Find the complete folder list as fast as possible, without competing background threads,
 			//  so that we can formulate a rough ETA based on total folders:
-			// (Simple disk access is not improved with multi-threading, so we don't)
-			recurseFolders();
+			// (Simple disk access is probably not improved with multi-threading, so we don't)
+			// This method also calculates recursive file/folder counts and a crude hash for each folder that
+			//  helps to identify _potential_ groups of identical folders.
+			fastFindAllFolders();
 			TotalFoldersFound = getFoldersFoundCount();
 
+			// As stated above, the fastFindAllFolders() method calculated a crude count/hash per folder.
+			// We now scan these looking for hash matches:
 			findPotentialIdenticalFoldersByItemCounts();
-			// Potential Identical folders now in HashedFolderListByCounts.
-			//TODO: Look closer at duplicates.
+
+			filterPotentialIdenticalFoldersByFileSizeHash();
 
 			/// ...
 
 			// Now scan through the folder list looking for:
 			// a) Folders that might be identical, based on number and size of files,
 			// b) Files that might be identical based on file size.
-			scanSizesThread = new Thread( delegate() {scanFolderAndFileSizes();});
-			scanSizesThread.Start();
+//			scanSizesThread = new Thread( delegate() {scanFolderAndFileSizes();} );
+//			scanSizesThread.Start();
+
+//			scanFolderAndFileSizes();
 
 
 		}
@@ -135,7 +143,7 @@ namespace DupsBegone
 		/// This method is used initially to get the full folder list as fast as possible in a single thread.
 		/// Only after this method completes do we start a closer look at folder contents
 		/// </summary>
-		public void recurseFolders()
+		public void fastFindAllFolders()
 		{
 			// Pre-allocate all possible variables used. Faster?
 			FolderItem currentFolder, newFolderItem;
@@ -196,19 +204,28 @@ namespace DupsBegone
 		{
 			PotentialMatchingFoldsToScanCount = foldersRecursed.Count;
 
+			Dictionary<string, List<FolderItem>> duplicatesOnly = new Dictionary<string, List<FolderItem>>();
+
+			var dupKeyList = new List<string>();
+
+			// Create a summary dictionary, containing lists of items with matching (crude) hashes:
+			// This loop has no disk access, so is very fast:
 			List<FolderItem> folderList;
 			foreach (FolderItem fi in foldersRecursed) {
-				string countHash = String.Format("{0:D}-{1:D}-{2:X}",
-					fi.totalFoldsRecursive, fi.totalFilesRecursive, fi.hashFFCounts);
+				string countHash = fi.getCountHash();
 				
 				if ( HashedFolderListByCounts.TryGetValue(countHash,out folderList) ) {
 					folderList.Add(fi);
 					// List already exists. That means we found a duplicate:
 					++PotentialMatchingFoldsFoundCount;
-					// We never count the first one (as it wasn't a dupplicate yet).
+					// We never count the first one (as it wasn't a duplicate yet).
 					// But count it now we found a duplicate:
-					if ( folderList.Count == 2 )
+					if ( folderList.Count == 2 ) {
 						++PotentialMatchingFoldsFoundCount;
+						// Also now store this list in a DuplicatesOnly dictionary:
+						duplicatesOnly.Add(countHash, folderList);
+						dupKeyList.Add(countHash);
+					}
 				} else {
 					folderList = new List<FolderItem>();
 					folderList.Add(fi);
@@ -217,55 +234,82 @@ namespace DupsBegone
 				++PotentialMatchingFoldsScannedCount;
 			}
 
-			// Now loop through the summary dictionary looking for matches:
-			var filteredList = new Dictionary<string, List<FolderItem>>();
-			LOG.d( "Found total of " + HashedFolderListByCounts.Count  + " Folder count signatures. Looking for dups..." );
-			foreach (KeyValuePair<string, List<FolderItem>> kvp in HashedFolderListByCounts) {
-				folderList = kvp.Value;
-				if ( folderList.Count > 1 ) {
-					LOG.d("Found " + folderList.Count + " folders with pattern: " + kvp.Key);
-					filteredList.Add(kvp.Key, folderList);
+			LOG.d( "Found total of " + PotentialMatchingFoldsFoundCount  + " potential duplicate folders" );
+			LOG.d( "Over " + duplicatesOnly.Count  + " duplicate groups" );
+
+			// Assign the filtered list to the global:
+			HashedFolderListByCounts = duplicatesOnly;
+
+
+			// Sort the keylist, based on most folders in each dup, then most files:
+			dupKeyList.Sort( delegate(string s1, string s2) {
+				// Hash strings look like "0-21-AB89" - 0=numFolds, 21=numFiles
+				string[] s1a = s1.Split('-'), s2a = s2.Split('-');
+				int numFolds1 = Int32.Parse(s1a[0]);
+				int numFolds2 = Int32.Parse(s2a[0]);
+			
+				if ( numFolds2 > numFolds1 )
+					return +1;
+				else if ( numFolds2 < numFolds1 )
+					return -1;
+				else {
+					int numFiles1 = Int32.Parse(s1a[1]);
+					int numFiles2 = Int32.Parse(s2a[1]);
+					if ( numFiles2 > numFiles1 )
+						return +1;
+					else if ( numFiles2 < numFiles1 )
+						return -1;
+					else
+						return 0;
+				}
+			} );
+
+
+			// Now create an ordered (grouped) list of potential duplicate folders, for which we should take a closer look:
+			foreach (string key in dupKeyList) {
+				folderList = HashedFolderListByCounts[key];
+				foreach(FolderItem fi in folderList) {
+					potentialDupFoldersByCounts.Enqueue(fi);
 				}
 			}
 
-			// Assign the filtered list to the global:
-			HashedFolderListByCounts = filteredList;
+			LOG.d("Potential dup folders:");
+			foreach (FolderItem fi in potentialDupFoldersByCounts) {
+				LOG.d(fi.getCountHash() + " : " + fi.getFullPath());
+			}
+
+		}
+
+		public void filterPotentialIdenticalFoldersByFileSizeHash()
+		{
+			GroupedFolderSet gfs = new GroupedFolderSet();
+
+			foreach (KeyValuePair<string, List<FolderItem>> kvp in HashedFolderListByCounts) {
+				foreach (FolderItem fi in kvp.Value) {
+					long hash = fi.getFileSizesHash();
+					gfs.AddFolder(String.Format("{0:D}", hash), fi);
+				}
+			}
+
+			gfs = gfs.WithNonDupsRemoved();
+
+			LOG.d("New Dup Folder list via file size hashing:\n" + gfs.ToString());
 
 		}
 
 		public void scanFolderAndFileSizes()
 		{
 			FolderItem folderItem;
-			UnixDirectoryInfo di;
-			UnixFileSystemInfo[] folderItems;
-			uint totalDirs;
-			uint totalFiles;
-			ulong totalFilesSize;
-			ulong sizeHash;
-			string hashString;
+//			UnixDirectoryInfo di;
+//			UnixFileSystemInfo[] folderItems;
+//			uint totalDirs;
+//			uint totalFiles;
+//			ulong totalFilesSize;
+			long sizeHash;
+//			string hashString;
 
 			while (foldersRecursed.TryDequeue(out folderItem)) {
-				di = new UnixDirectoryInfo(folderItem.getFullPath());
-				folderItems = di.GetFileSystemEntries();
-				totalDirs = totalFiles = 0;
-				totalFilesSize = sizeHash = 0;
-				foreach (UnixFileSystemInfo fsItem in folderItems) {
-					if ( fsItem.IsDirectory ) {
-						++totalDirs;
-					} else {
-						++totalFiles;
-						totalFilesSize += (ulong)fsItem.Length;
-						// A simple, fast, order-independent hash of the set of file sizes:
-						// (Who knows if it's any good...)
-						sizeHash ^= (ulong)fsItem.Length << (int)(fsItem.Length >> 4 & 0x1F);   // 0x550 = (binary)010101010101
-
-						//TODO: Store _file_ path indexed against the file size, for comparison in File Comparison thread.
-					}
-				}
-				hashString = String.Format("{0:X}-{1:D}-{2:D}-{3:D}", sizeHash, totalFilesSize, totalFiles, totalDirs);
-				LOG.d("Folder Hash string: " + hashString);
-				//TODO: Store the path indexed by the hash, for potential folder matches.
-				// Maybe we should store file info here too (while we have it)
+				sizeHash = folderItem.getFileSizesHash();
 			}
 
 		}
