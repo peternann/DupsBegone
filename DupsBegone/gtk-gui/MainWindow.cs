@@ -132,7 +132,7 @@ public partial class MainWindow
 		// Container child hbox2.Gtk.Box+BoxChild
 		this.label3 = new global::Gtk.Label ();
 		this.label3.Name = "label3";
-		this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("Find potential matching folders:");
+		this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("Shallow-scan potential matching folders:");
 		this.hbox2.Add (this.label3);
 		global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.label3]));
 		w10.Position = 0;
@@ -165,8 +165,8 @@ public partial class MainWindow
 		if ((this.Child != null)) {
 			this.Child.ShowAll ();
 		}
-		this.DefaultWidth = 400;
-		this.DefaultHeight = 307;
+		this.DefaultWidth = 474;
+		this.DefaultHeight = 354;
 		this.vboxRunStatus.Hide ();
 		this.Show ();
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler (this.OnDeleteEvent);

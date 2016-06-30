@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace DupsBegone
 {
@@ -13,6 +14,10 @@ namespace DupsBegone
 		public static void d(string message)
 		{
 			logger.d(message);
+		}
+		public static void d(StringBuilder message)
+		{
+			d(message.ToString());
 		}
 
 	}

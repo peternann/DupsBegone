@@ -10,7 +10,7 @@ namespace DupsBegone
 		{
 		}
 
-		public void AddFolder( string hash, FolderItem folder )
+		public int AddFolder( string hash, FolderItem folder )
 		{
 			List<FolderItem> folderList;
 			if ( this.TryGetValue(hash, out folderList) ) {
@@ -20,6 +20,7 @@ namespace DupsBegone
 				folderList.Add(folder);
 				this.Add(hash, folderList);
 			}
+			return folderList.Count;
 		}
 
 		/// <summary>
@@ -42,7 +43,7 @@ namespace DupsBegone
 			List<FolderItem> folderList;
 			foreach (KeyValuePair<string,List<FolderItem>> kvp in this) {
 				folderList = kvp.Value;
-				sb.AppendLine("Group:" + kvp.Key);
+				sb.AppendLine("Group:" + kvp.Key );
 				foreach (FolderItem fi in folderList) {
 					sb.AppendLine("..Item Path:" + fi.getFullPath());
 				}

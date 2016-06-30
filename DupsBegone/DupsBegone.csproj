@@ -69,6 +69,7 @@
     <Compile Include="FolderItem.cs" />
     <Compile Include="FileSystemItem.cs" />
     <Compile Include="GroupedFolderSet.cs" />
+    <Compile Include="ABHash.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

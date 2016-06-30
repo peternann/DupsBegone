@@ -1,6 +1,7 @@
 ﻿using System;
 using Gtk;
 using DupsBegone;
+using System.Reflection;
 
 public partial class MainWindow: Gtk.Window
 {
@@ -19,6 +20,21 @@ public partial class MainWindow: Gtk.Window
 
 	protected void OnButtonGoStopClicked(object sender, EventArgs e)
 	{
+
+		var rect = this.textviewFoldersToScan.Allocation;
+		PropertyInfo[] properties = rect.GetType().GetProperties();
+		var sb = new System.Text.StringBuilder();
+		foreach (PropertyInfo pi in properties)
+		{
+			sb.Append(
+				string.Format("Name: {0} | Value: {1}\n", 
+					pi.Name, 
+					pi.GetValue(rect, null)
+				) 
+			);
+		}
+		LOG.d(sb);
+
 		if ( "Go!".Equals(buttonGoStop.Label) ) {
 			string[] foldersToScan = textviewFoldersToScan.Buffer.Text.Split('\n');
 			vboxRunStatus.Visible = true;
