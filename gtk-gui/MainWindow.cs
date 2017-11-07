@@ -69,7 +69,7 @@ public partial class MainWindow
 		this.GtkAlignment.LeftPadding = ((uint)(12));
 		// Container child GtkAlignment.Gtk.Container+ContainerChild
 		this.textviewFoldersToScan = new global::Gtk.TextView ();
-		this.textviewFoldersToScan.Buffer.Text = "/NAS/OurPhotos_BACKUP\n/NAS/OurPhotos-OldAndMessy";
+		this.textviewFoldersToScan.Buffer.Text = "/NAS/N/OurPhotos_BACKUP\n/NAS/N/OurPhotos-OldAndMessy";
 		this.textviewFoldersToScan.CanFocus = true;
 		this.textviewFoldersToScan.Name = "textviewFoldersToScan";
 		this.GtkAlignment.Add (this.textviewFoldersToScan);

@@ -20,7 +20,7 @@ public partial class MainWindow: Gtk.Window
 
 	protected void OnButtonGoStopClicked(object sender, EventArgs e)
 	{
-
+		Console.WriteLine("OnButtonGoStopClicked().");
 		var rect = this.textviewFoldersToScan.Allocation;
 		PropertyInfo[] properties = rect.GetType().GetProperties();
 		var sb = new System.Text.StringBuilder();

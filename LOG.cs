@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Text;
 
+//using MonoDevelop.Core.Logging;
+
 namespace DupsBegone
 {
 	/// <summary>
@@ -9,11 +11,12 @@ namespace DupsBegone
 	/// </summary>
 	public static class LOG
 	{
-		private static ILogger logger = new ConsoleLogger();
+//		private static ILogger logger = new ConsoleLogger();
 
 		public static void d(string message)
 		{
-			logger.d(message);
+//			logger.Log(LogLevel.Debug,message);
+			Console.WriteLine(message);
 		}
 		public static void d(StringBuilder message)
 		{

@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using Mono.Unix;
 
@@ -11,11 +12,11 @@ namespace DupsBegone
 		private ICollection<FolderItem> localFolds = null;
 
 		// Used to store TOTAL counts of files/folders in this folder AND all sub-folders:
-//		public ulong totalFoldsRecursive = 0;
-//		public ulong totalFilesRecursive = 0;
+		//		public ulong totalFoldsRecursive = 0;
+		//		public ulong totalFilesRecursive = 0;
 
 		// We also store an XOR hash of file/folder numbers:
-//		public ulong hashFFCounts = 0;
+		//		public ulong hashFFCounts = 0;
 
 		private ABHash ffcHash;   // File and Folder Count Hash.
 
@@ -67,8 +68,8 @@ namespace DupsBegone
 
 		public string getCountHashString() {
 			return ffcHash.ToString();
-//			return String.Format("{0:D}-{1:D}-{2:X}",
-//				totalFoldsRecursive, totalFilesRecursive, hashFFCounts);
+			//			return String.Format("{0:D}-{1:D}-{2:X}",
+			//				totalFoldsRecursive, totalFilesRecursive, hashFFCounts);
 		}
 
 		/// <summary>
