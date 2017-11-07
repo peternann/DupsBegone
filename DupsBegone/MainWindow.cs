@@ -37,12 +37,21 @@ public partial class MainWindow: Gtk.Window
 
 		if ( "Go!".Equals(buttonGoStop.Label) ) {
 			string[] foldersToScan = textviewFoldersToScan.Buffer.Text.Split('\n');
+			textviewFoldersToScan.HeightRequest = 5;
+
+
 			vboxRunStatus.Visible = true;
 			dupFinder = new DupFinder(foldersToScan);
 			dupFinder.startInBackground();
 
 			GLib.Timeout.Add(100, new GLib.TimeoutHandler(update_status));
 			buttonGoStop.Label = "Stop";
+
+			UIQueries window = new UIQueries (); 
+			window.ShowAll();
+			window.newEmptyFolderFound("foo");
+			window.newEmptyFolderFound("bar");
+
 		} else {
 			dupFinder.stop();
 		}

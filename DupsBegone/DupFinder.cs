@@ -84,8 +84,6 @@ namespace DupsBegone
 //				}
 //			}
 
-			FolderItem folderItem;
-
 			try
 			{
 				foreach ( FolderItem fi in c00SuppliedPathsToScan ) {
@@ -211,7 +209,7 @@ namespace DupsBegone
 		{
 			PotentialMatchingFoldsToScanCount = c02AllFoldersFoundQueue.Count;
 
-			Dictionary<string, List<FolderItem>> duplicatesOnly = new Dictionary<string, List<FolderItem>>();
+//			Dictionary<string, List<FolderItem>> duplicatesOnly = new Dictionary<string, List<FolderItem>>();
 
 			var dupKeyList = new List<string>();
 
@@ -307,7 +305,6 @@ namespace DupsBegone
 					LOG.d("Potential group(s) based on file sizes:\n" + gfs.ToString());
 				// And add the remaining dups to the next queue:
 				foreach (var x in gfs) {
-//					c05PotentialDupFoldersByFileSizeHash.Add(x.Key, x.Value);
 					// Use of groupSet avoids occasional hash clash problems:
 					c05PotentialDupFoldersByFileSizeHash.Add(x.Key + "-" + ++groupSet, x.Value);
 				}

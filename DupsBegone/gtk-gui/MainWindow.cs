@@ -76,6 +76,7 @@ public partial class MainWindow
 		this.frame1.Add (this.GtkAlignment);
 		this.GtkLabel1 = new global::Gtk.Label ();
 		this.GtkLabel1.Name = "GtkLabel1";
+		this.GtkLabel1.Xalign = 0F;
 		this.GtkLabel1.LabelProp = global::Mono.Unix.Catalog.GetString ("<b>Folder(s) to scan:</b>");
 		this.GtkLabel1.UseMarkup = true;
 		this.frame1.LabelWidget = this.GtkLabel1;

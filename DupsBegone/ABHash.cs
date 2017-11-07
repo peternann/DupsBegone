@@ -32,7 +32,7 @@ namespace DupsBegone
 			hash ^= abHash.hash;
 		}
 
-		public string ToString()
+		public override string ToString()
 		{
 			return ToString("{0:D}-{1:D}-{2:X}");
 		}
